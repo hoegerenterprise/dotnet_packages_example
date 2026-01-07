@@ -1,0 +1,5 @@
+    - Username: testuser
+    - Email: test@example.com
+    - Password: TestPassword123
+    - First Name: Test
+    - Last Name: User
