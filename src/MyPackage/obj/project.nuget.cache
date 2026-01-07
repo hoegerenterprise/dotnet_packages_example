@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "jmW+OY2Fg6p6FSPGvnRDxX2exPs8xERKix3PN1W4G8cK/EnbYeA0xAQpRaOEr8BO1qbyK9Dqmhnst2leXW4Cvw==",
+  "dgSpecHash": "r8WlqOAYT403viK1VQZcRE9w7QPL/wIS2Npz/OcduCEKaNFax5kP1+qf06FGv8OcTmOEhV/DINaIUliqraTVVw==",
   "success": true,
   "projectFilePath": "/home/nh/git/dotnet_packages/src/MyPackage/MyPackage.csproj",
   "expectedPackageFiles": [

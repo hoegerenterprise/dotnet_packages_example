@@ -1,121 +1,56 @@
 using MainApp.Data;
-using MainApp.Models;
 using Microsoft.EntityFrameworkCore;
 
-Console.WriteLine("=== .NET 8 Package Demo ===\n");
+var builder = WebApplication.CreateBuilder(args);
 
-// Create and migrate the database
-using var db = new AppDbContext();
-db.Database.EnsureDeleted();
-db.Database.EnsureCreated();
+// Add services to the container
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(MyPackage.Controllers.ProductsController).Assembly); // Discover controllers from MyPackage
 
-Console.WriteLine("Database created with models and data from both MainApp and MyPackage!\n");
+// Add DbContext
+builder.Services.AddDbContext<AppDbContext>();
+// Register DbContext so MyPackage controllers can use it
+builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
-// ===== PRODUCTS FROM PACKAGE =====
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine("PRODUCTS (from MyPackage)");
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-var products = await db.Products.ToListAsync();
-
-foreach (var product in products)
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    Console.WriteLine($"#{product.Id} - {product.Name}");
-    Console.WriteLine($"  Description: {product.Description}");
-    Console.WriteLine($"  Price: ${product.Price:F2}");
-    Console.WriteLine($"  Category: {product.Category}");
-    Console.WriteLine();
+    c.SwaggerDoc("v1", new() {
+        Title = ".NET 8 Package Demo API",
+        Version = "v1",
+        Description = "API demonstrating reusable packages with Entity Framework Core. Includes controllers from both MainApp and MyPackage."
+    });
+});
+
+var app = builder.Build();
+
+// Initialize database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
 }
 
-// ===== CUSTOMERS FROM MAIN APP =====
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine("CUSTOMERS (from MainApp)");
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-var customers = await db.Customers.ToListAsync();
-
-foreach (var customer in customers)
+// Configure the HTTP request pipeline
+// Enable Swagger in all environments for demo purposes
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    Console.WriteLine($"#{customer.Id} - {customer.Name}");
-    Console.WriteLine($"  Email: {customer.Email}");
-    Console.WriteLine($"  Registered: {customer.RegisteredDate:yyyy-MM-dd}");
-    Console.WriteLine();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", ".NET 8 Package Demo API v1");
+    c.RoutePrefix = "docs"; // Serve Swagger UI at /docs
+});
 
-// ===== ORDERS - LINKING MAIN APP AND PACKAGE MODELS =====
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine("ORDERS (MainApp models referencing MyPackage models)");
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
-var orders = await db.Orders
-    .Include(o => o.Customer)
-    .Include(o => o.Product)
-    .ToListAsync();
+app.Logger.LogInformation("API started successfully!");
+app.Logger.LogInformation("Swagger UI: http://localhost:5000/docs");
+app.Logger.LogInformation("API Base: http://localhost:5000/api/v1");
+app.Logger.LogInformation("Controllers:");
+app.Logger.LogInformation("  - CustomersController (MainApp)");
+app.Logger.LogInformation("  - OrdersController (MainApp)");
+app.Logger.LogInformation("  - ProductsController (MyPackage)");
 
-foreach (var order in orders)
-{
-    Console.WriteLine($"Order #{order.Id}");
-    Console.WriteLine($"  Customer: {order.Customer.Name}");
-    Console.WriteLine($"  Product: {order.Product.Name} (from package)");
-    Console.WriteLine($"  Quantity: {order.Quantity}");
-    Console.WriteLine($"  Total: ${order.TotalAmount:F2}");
-    Console.WriteLine($"  Date: {order.OrderDate:yyyy-MM-dd}");
-    Console.WriteLine();
-}
-
-// ===== ADDING NEW DATA DYNAMICALLY =====
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine("ADDING NEW DATA");
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-// Add a new product from main app
-var newProduct = new MyPackage.Models.Product
-{
-    Name = "Super Gadget",
-    Description = "Added dynamically by main application",
-    Price = 99.99m,
-    Category = "Premium"
-};
-
-db.Products.Add(newProduct);
-await db.SaveChangesAsync();
-
-Console.WriteLine($"✓ Added new product: {newProduct.Name}");
-
-// Add a new customer from main app
-var newCustomer = new Customer
-{
-    Name = "Alice Johnson",
-    Email = "alice.johnson@example.com",
-    RegisteredDate = DateTime.Now
-};
-
-db.Customers.Add(newCustomer);
-await db.SaveChangesAsync();
-
-Console.WriteLine($"✓ Added new customer: {newCustomer.Name}");
-
-// Create an order linking the new customer and new product
-var newOrder = new Order
-{
-    CustomerId = newCustomer.Id,
-    ProductId = newProduct.Id,
-    Quantity = 1,
-    OrderDate = DateTime.Now,
-    TotalAmount = newProduct.Price
-};
-
-db.Orders.Add(newOrder);
-await db.SaveChangesAsync();
-
-Console.WriteLine($"✓ Created order for {newCustomer.Name} - {newProduct.Name}");
-
-// ===== FINAL SUMMARY =====
-Console.WriteLine("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine("SUMMARY");
-Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-Console.WriteLine($"Total Products: {await db.Products.CountAsync()} (3 from package + {await db.Products.CountAsync() - 3} added)");
-Console.WriteLine($"Total Customers: {await db.Customers.CountAsync()} (2 seeded + {await db.Customers.CountAsync() - 2} added)");
-Console.WriteLine($"Total Orders: {await db.Orders.CountAsync()} (2 seeded + {await db.Orders.CountAsync() - 2} added)");
-Console.WriteLine("\n✓ Demo complete! Both MainApp and MyPackage models working together.");
+app.Run();

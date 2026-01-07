@@ -1,13 +1,19 @@
-# .NET 8 Reusable Package Demo
+# .NET 8 Reusable Package Demo with REST API
 
-This project demonstrates how to create reusable .NET 8 packages with database access that can be integrated into a main application.
+This project demonstrates how to create reusable .NET 8 packages with database access, REST API controllers, and DTOs that can be integrated into a main application.
 
 ## Project Structure
 
 ```
 dotnet_packages/
 ├── src/
-│   ├── MainApp/              # Main console application
+│   ├── MainApp/              # Main Web API application
+│   │   ├── Controllers/
+│   │   │   ├── CustomersController.cs
+│   │   │   └── OrdersController.cs
+│   │   ├── DTOs/
+│   │   │   ├── CustomerDto.cs
+│   │   │   └── OrderDto.cs
 │   │   ├── Models/
 │   │   │   ├── Customer.cs
 │   │   │   └── Order.cs
@@ -15,7 +21,11 @@ dotnet_packages/
 │   │   │   └── AppDbContext.cs
 │   │   ├── Program.cs
 │   │   └── MainApp.csproj
-│   └── MyPackage/            # Reusable package library
+│   └── MyPackage/            # Reusable package library with API controllers
+│       ├── Controllers/
+│       │   └── ProductsController.cs
+│       ├── DTOs/
+│       │   └── ProductDto.cs
 │       ├── Models/
 │       │   └── Product.cs
 │       ├── Data/
@@ -51,6 +61,19 @@ dotnet_packages/
 - Entity relationships work seamlessly across package boundaries
 - Both package and application data are seeded automatically on database creation
 
+### 5. REST API with Controllers and DTOs
+- **MainApp** is an ASP.NET Core Web API with:
+  - `CustomersController` - Full CRUD operations for customers
+  - `OrdersController` - Full CRUD operations for orders
+  - DTOs (Data Transfer Objects) for clean API contracts
+  - Swagger/OpenAPI documentation at root URL
+- **MyPackage** includes:
+  - `ProductsController` - Discovered via Application Parts
+  - Product DTOs (ProductDto, CreateProductDto, UpdateProductDto)
+  - Controllers can be reused across multiple applications
+- **Controller Discovery**: MainApp automatically discovers and registers controllers from MyPackage
+- **Dependency Injection**: DbContext is properly injected into controllers from both projects
+
 ## How It Works
 
 1. **Package defines models**: `MyPackage/Models/Product.cs` defines the Product entity
@@ -75,86 +98,138 @@ dotnet_packages/
 # Build the projects
 dotnet build
 
-# Run the main application
-dotnet run
-
-# Or run with project path
+# Run the Web API
 dotnet run --project src/MainApp
+
+# Or specify a custom port
+dotnet run --project src/MainApp --urls "http://localhost:5123"
 ```
 
-### Expected Output
+### Access the API
 
+Once running, you can access:
+- **Swagger UI**: http://localhost:5000/docs (interactive API documentation)
+- **Products API**: http://localhost:5000/api/v1/products
+- **Customers API**: http://localhost:5000/api/v1/customers
+- **Orders API**: http://localhost:5000/api/v1/orders
+
+### API Endpoints
+
+#### Products (from MyPackage)
+```bash
+GET    /api/v1/products       # Get all products
+GET    /api/v1/products/{id}  # Get product by ID
+POST   /api/v1/products       # Create new product
+PUT    /api/v1/products/{id}  # Update product
+DELETE /api/v1/products/{id}  # Delete product
 ```
-=== .NET 8 Package Demo ===
 
-Database created with models and data from both MainApp and MyPackage!
+#### Customers (from MainApp)
+```bash
+GET    /api/v1/customers       # Get all customers
+GET    /api/v1/customers/{id}  # Get customer by ID
+POST   /api/v1/customers       # Create new customer
+PUT    /api/v1/customers/{id}  # Update customer
+DELETE /api/v1/customers/{id}  # Delete customer
+```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PRODUCTS (from MyPackage)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#### Orders (from MainApp)
+```bash
+GET    /api/v1/orders       # Get all orders
+GET    /api/v1/orders/{id}  # Get order by ID
+POST   /api/v1/orders       # Create new order
+PUT    /api/v1/orders/{id}  # Update order
+DELETE /api/v1/orders/{id}  # Delete order
+```
 
-#1 - Premium Widget
-  Description: High-quality widget from package
-  Price: $29.99
-  Category: Widgets
+### Example API Requests
 
-#2 - Deluxe Gadget
-  Description: Advanced gadget from package
-  Price: $49.99
-  Category: Gadgets
+```bash
+# Get all products
+curl http://localhost:5000/api/v1/products
 
-#3 - Basic Tool
-  Description: Essential tool from package
-  Price: $19.99
-  Category: Tools
+# Get a specific customer
+curl http://localhost:5000/api/v1/customers/1
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CUSTOMERS (from MainApp)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Create a new order
+curl -X POST http://localhost:5000/api/v1/orders \
+  -H "Content-Type: application/json" \
+  -d '{"customerId": 1, "productId": 2, "quantity": 3}'
+```
 
-#1 - John Doe
-  Email: john.doe@example.com
-  Registered: 2024-01-15
+### Expected API Responses
 
-#2 - Jane Smith
-  Email: jane.smith@example.com
-  Registered: 2024-03-20
+The database is automatically created with seed data. Here are example API responses:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ORDERS (MainApp models referencing MyPackage models)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**GET /api/v1/products**
+```json
+[
+  {
+    "id": 1,
+    "name": "Premium Widget",
+    "description": "High-quality widget from package",
+    "price": 29.99,
+    "category": "Widgets"
+  },
+  {
+    "id": 2,
+    "name": "Deluxe Gadget",
+    "description": "Advanced gadget from package",
+    "price": 49.99,
+    "category": "Gadgets"
+  },
+  {
+    "id": 3,
+    "name": "Basic Tool",
+    "description": "Essential tool from package",
+    "price": 19.99,
+    "category": "Tools"
+  }
+]
+```
 
-Order #1
-  Customer: John Doe
-  Product: Premium Widget (from package)
-  Quantity: 2
-  Total: $59.98
-  Date: 2024-06-10
+**GET /api/v1/customers**
+```json
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "registeredDate": "2024-01-15T00:00:00"
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "registeredDate": "2024-03-20T00:00:00"
+  }
+]
+```
 
-Order #2
-  Customer: Jane Smith
-  Product: Basic Tool (from package)
-  Quantity: 1
-  Total: $19.99
-  Date: 2024-07-05
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ADDING NEW DATA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✓ Added new product: Super Gadget
-✓ Added new customer: Alice Johnson
-✓ Created order for Alice Johnson - Super Gadget
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Total Products: 4 (3 from package + 1 added)
-Total Customers: 3 (2 seeded + 1 added)
-Total Orders: 3 (2 seeded + 1 added)
-
-✓ Demo complete! Both MainApp and MyPackage models working together.
+**GET /api/v1/orders**
+```json
+[
+  {
+    "id": 1,
+    "customerId": 1,
+    "customerName": "John Doe",
+    "productId": 1,
+    "productName": "Premium Widget",
+    "quantity": 2,
+    "orderDate": "2024-06-10T00:00:00",
+    "totalAmount": 59.98
+  },
+  {
+    "id": 2,
+    "customerId": 2,
+    "customerName": "Jane Smith",
+    "productId": 3,
+    "productName": "Basic Tool",
+    "quantity": 1,
+    "orderDate": "2024-07-05T00:00:00",
+    "totalAmount": 19.99
+  }
+]
 ```
 
 ## Creating a NuGet Package
@@ -205,8 +280,12 @@ For more advanced scenarios, you can:
 ## Technologies Used
 
 - .NET 8
+- ASP.NET Core 8 (Web API)
 - Entity Framework Core 8
 - SQLite database
+- Swagger/OpenAPI (Swashbuckle)
+- DTOs (Data Transfer Objects)
+- Application Parts (Controller Discovery)
 - C# 12
 
 ## License
