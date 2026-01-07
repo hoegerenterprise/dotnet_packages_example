@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using MyPackage.Models;
 using MyPackage.Data;
 using MainApp.Models;
+using Users.Models;
+using Users.Data;
 
 namespace MainApp.Data;
 
@@ -14,6 +16,11 @@ public class AppDbContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Order> Orders { get; set; }
 
+    // Models from the Users package
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserGroup> UserGroups { get; set; }
+    public DbSet<UserUserGroup> UserUserGroups { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source=app.db");
@@ -25,6 +32,9 @@ public class AppDbContext : DbContext
 
         // Add data from the package
         PackageDbInitializer.AddPackageData(modelBuilder);
+
+        // Add data from the Users package
+        UsersDbInitializer.AddUsersData(modelBuilder);
 
         // Add seed data for main app models
         modelBuilder.Entity<Customer>().HasData(

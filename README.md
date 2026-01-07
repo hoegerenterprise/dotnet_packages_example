@@ -1,6 +1,6 @@
-# .NET 8 Reusable Package Demo with REST API
+# .NET 8 Reusable Package Demo with REST API and JWT Authentication
 
-This project demonstrates how to create reusable .NET 8 packages with database access, REST API controllers, and DTOs that can be integrated into a main application.
+This project demonstrates how to create reusable .NET 8 packages with database access, REST API controllers, DTOs, and JWT authentication that can be integrated into a main application.
 
 ## Project Structure
 
@@ -21,16 +21,35 @@ dotnet_packages/
 │   │   │   └── AppDbContext.cs
 │   │   ├── Program.cs
 │   │   └── MainApp.csproj
-│   └── MyPackage/            # Reusable package library with API controllers
+│   ├── MyPackage/            # Reusable package library with API controllers
+│   │   ├── Controllers/
+│   │   │   └── ProductsController.cs
+│   │   ├── DTOs/
+│   │   │   └── ProductDto.cs
+│   │   ├── Models/
+│   │   │   └── Product.cs
+│   │   ├── Data/
+│   │   │   └── PackageDbInitializer.cs
+│   │   └── MyPackage.csproj
+│   └── Users/                # Authentication and user management package
 │       ├── Controllers/
-│       │   └── ProductsController.cs
+│       │   ├── AuthController.cs
+│       │   ├── UsersController.cs
+│       │   └── UserGroupsController.cs
 │       ├── DTOs/
-│       │   └── ProductDto.cs
+│       │   ├── LoginDto.cs
+│       │   ├── RegisterDto.cs
+│       │   ├── UserDto.cs
+│       │   └── UserGroupDto.cs
 │       ├── Models/
-│       │   └── Product.cs
+│       │   ├── User.cs
+│       │   ├── UserGroup.cs
+│       │   └── UserUserGroup.cs
+│       ├── Services/
+│       │   └── JwtService.cs
 │       ├── Data/
-│       │   └── PackageDbInitializer.cs
-│       └── MyPackage.csproj
+│       │   └── UsersDbInitializer.cs
+│       └── Users.csproj
 ├── .gitignore
 └── README.md
 ```
@@ -67,13 +86,27 @@ dotnet_packages/
   - `CustomersController` - Full CRUD operations for customers
   - `OrdersController` - Full CRUD operations for orders
   - DTOs (Data Transfer Objects) for clean API contracts
-  - Swagger/OpenAPI documentation at root URL
+  - Swagger/OpenAPI documentation at `/docs`
 - **MyPackage** includes:
   - `ProductsController` - Discovered via Application Parts
   - Product DTOs (ProductDto, CreateProductDto, UpdateProductDto)
   - Controllers can be reused across multiple applications
-- **Controller Discovery**: MainApp automatically discovers and registers controllers from MyPackage
-- **Dependency Injection**: DbContext is properly injected into controllers from both projects
+- **Users** package includes:
+  - `AuthController` - Login and registration endpoints
+  - `UsersController` - User management with role-based authorization
+  - `UserGroupsController` - Group management
+  - JWT token generation and validation
+- **Controller Discovery**: MainApp automatically discovers and registers controllers from all packages
+- **Dependency Injection**: DbContext is properly injected into controllers from all projects
+
+### 6. JWT Authentication and Authorization
+- **Users** package provides complete authentication system:
+  - JWT Bearer token authentication
+  - BCrypt password hashing
+  - Role-based authorization (Administrators, Managers, Users groups)
+  - User and user group management
+  - Protected endpoints requiring authentication
+  - Some endpoints restricted to specific roles (e.g., admin-only operations)
 
 ## How It Works
 
@@ -113,6 +146,9 @@ Once running, you can access:
 - **Products API**: http://localhost:5000/api/v1/products
 - **Customers API**: http://localhost:5000/api/v1/customers
 - **Orders API**: http://localhost:5000/api/v1/orders
+- **Authentication API**: http://localhost:5000/api/v1/auth
+- **Users API**: http://localhost:5000/api/v1/users (requires authentication)
+- **User Groups API**: http://localhost:5000/api/v1/usergroups
 
 ### API Endpoints
 
@@ -143,8 +179,36 @@ PUT    /api/v1/orders/{id}  # Update order
 DELETE /api/v1/orders/{id}  # Delete order
 ```
 
+#### Authentication (from Users package)
+```bash
+POST   /api/v1/auth/register  # Register new user
+POST   /api/v1/auth/login     # Login and receive JWT token
+```
+
+#### Users (from Users package) - Requires Authentication
+```bash
+GET    /api/v1/users          # Get all users (requires authentication)
+GET    /api/v1/users/{id}     # Get user by ID (requires authentication)
+POST   /api/v1/users          # Create new user (admin only)
+PUT    /api/v1/users/{id}     # Update user (admin/manager only)
+DELETE /api/v1/users/{id}     # Delete user (admin only)
+```
+
+#### User Groups (from Users package)
+```bash
+GET    /api/v1/usergroups                    # Get all groups
+GET    /api/v1/usergroups/{id}               # Get group by ID
+GET    /api/v1/usergroups/{id}/users         # Get users in group
+POST   /api/v1/usergroups                    # Create new group (admin only)
+PUT    /api/v1/usergroups/{id}               # Update group (admin only)
+DELETE /api/v1/usergroups/{id}               # Delete group (admin only)
+POST   /api/v1/usergroups/{id}/users         # Add user to group (admin only)
+DELETE /api/v1/usergroups/{id}/users/{userId} # Remove user from group (admin only)
+```
+
 ### Example API Requests
 
+#### Public Endpoints (No Authentication Required)
 ```bash
 # Get all products
 curl http://localhost:5000/api/v1/products
@@ -156,6 +220,45 @@ curl http://localhost:5000/api/v1/customers/1
 curl -X POST http://localhost:5000/api/v1/orders \
   -H "Content-Type: application/json" \
   -d '{"customerId": 1, "productId": 2, "quantity": 3}'
+```
+
+#### Authentication Workflow
+```bash
+# 1. Register a new user
+curl -X POST http://localhost:5000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "SecurePassword123",
+    "firstName": "New",
+    "lastName": "User"
+  }'
+
+# 2. Login to get JWT token
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "newuser",
+    "password": "SecurePassword123"
+  }'
+
+# Response includes JWT token:
+# {
+#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#   "username": "newuser",
+#   "email": "newuser@example.com",
+#   "groups": ["Users"],
+#   "expiresAt": "2026-01-08T00:00:00Z"
+# }
+
+# 3. Use the token to access protected endpoints
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  http://localhost:5000/api/v1/users
+
+# 4. Accessing a specific user
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  http://localhost:5000/api/v1/users/1
 ```
 
 ### Expected API Responses
@@ -233,6 +336,78 @@ The database is automatically created with seed data. Here are example API respo
 ]
 ```
 
+**GET /api/v1/usergroups** (Seeded User Groups)
+```json
+[
+  {
+    "id": 1,
+    "name": "Administrators",
+    "description": "System administrators with full access",
+    "createdAt": "2024-01-01T00:00:00",
+    "memberCount": 1
+  },
+  {
+    "id": 2,
+    "name": "Managers",
+    "description": "Management team members",
+    "createdAt": "2024-01-01T00:00:00",
+    "memberCount": 1
+  },
+  {
+    "id": 3,
+    "name": "Users",
+    "description": "Regular users",
+    "createdAt": "2024-01-01T00:00:00",
+    "memberCount": 2
+  }
+]
+```
+
+### Seeded Test Users
+
+The database includes three pre-configured test users with different roles:
+
+| Username | Password      | Groups          | Capabilities                              |
+|----------|---------------|-----------------|-------------------------------------------|
+| admin    | (via seed)    | Administrators  | Full access to all endpoints              |
+| manager  | (via seed)    | Managers, Users | Can update users and access user data     |
+| user     | (via seed)    | Users           | Can access authenticated endpoints        |
+
+**Note**: The pre-seeded users use BCrypt hashed passwords. For testing, it's recommended to:
+1. Register a new user via `/api/v1/auth/register`
+2. Login with that user to get a JWT token
+3. Use the token to access protected endpoints
+
+New users registered via the API are automatically added to the "Users" group.
+
+## Authentication and Authorization
+
+### JWT Token Configuration
+
+The API uses JWT Bearer tokens for authentication. Token settings can be configured via environment variables or appsettings.json:
+
+- `Jwt:SecretKey` - Secret key for signing tokens (default: "your-super-secret-key-min-32-chars-long")
+- `Jwt:Issuer` - Token issuer (default: "dotnet-packages-demo")
+- `Jwt:Audience` - Token audience (default: "dotnet-packages-demo-api")
+- `Jwt:ExpirationMinutes` - Token lifetime in minutes (default: 60)
+
+### Role-Based Authorization
+
+Different endpoints require different authorization levels:
+
+- **Public** - No authentication required (Products, Customers, Orders, Auth endpoints)
+- **Authenticated** - Requires valid JWT token (GET /users, GET /usergroups)
+- **Managers** - Requires "Managers" or "Administrators" role (PUT /users/{id})
+- **Administrators** - Requires "Administrators" role (POST/DELETE /users, /usergroups management)
+
+### Password Requirements
+
+When registering users:
+- Username: Minimum 3 characters
+- Email: Must be valid email format
+- Password: Minimum 8 characters
+- First Name and Last Name: Required
+
 ## Creating a NuGet Package
 
 To distribute MyPackage as a reusable NuGet package:
@@ -287,6 +462,9 @@ For more advanced scenarios, you can:
 - Swagger/OpenAPI (Swashbuckle)
 - DTOs (Data Transfer Objects)
 - Application Parts (Controller Discovery)
+- JWT Bearer Authentication (Microsoft.AspNetCore.Authentication.JwtBearer)
+- BCrypt.Net-Next (Password hashing)
+- Role-Based Authorization
 - C# 12
 
 ## License

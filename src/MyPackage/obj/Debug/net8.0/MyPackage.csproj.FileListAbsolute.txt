@@ -6,8 +6,8 @@
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.AssemblyInfoInputs.cache
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.AssemblyInfo.cs
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.csproj.CoreCompileInputs.cache
+/home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.sourcelink.json
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.dll
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/refint/MyPackage.dll
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.pdb
 /home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/ref/MyPackage.dll
-/home/nh/git/dotnet_packages/src/MyPackage/obj/Debug/net8.0/MyPackage.sourcelink.json
