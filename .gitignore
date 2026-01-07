@@ -156,3 +156,9 @@ appsettings.*.json
 
 # IDE specific
 *.code-workspace
+
+# Frontend (Node.js / Vue)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.local

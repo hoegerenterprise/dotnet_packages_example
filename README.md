@@ -1,6 +1,6 @@
-# .NET 8 Reusable Package Demo with REST API and JWT Authentication
+# .NET 8 Reusable Package Demo with REST API, JWT Authentication, and Vue 3 Frontend
 
-This project demonstrates how to create reusable .NET 8 packages with database access, REST API controllers, DTOs, and JWT authentication that can be integrated into a main application.
+This project demonstrates how to create reusable .NET 8 packages with database access, REST API controllers, DTOs, and JWT authentication that can be integrated into a main application. Includes a modern Vue 3 + Vuetify frontend with authentication.
 
 ## Project Structure
 
@@ -125,8 +125,10 @@ dotnet_packages/
 
 ### Prerequisites
 - .NET 8 SDK
+- Node.js 18+ (for frontend)
+- npm or yarn
 
-### Build and Run
+### Backend Setup
 
 ```bash
 # Build the projects
@@ -138,6 +140,21 @@ dotnet run --project src/MainApp
 # Or specify a custom port
 dotnet run --project src/MainApp --urls "http://localhost:5123"
 ```
+
+### Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+```
+
+The backend API will be available at `http://localhost:5000` and the frontend at `http://localhost:5173`.
 
 ### Access the API
 
@@ -455,6 +472,7 @@ For more advanced scenarios, you can:
 
 ## Technologies Used
 
+### Backend
 - .NET 8
 - ASP.NET Core 8 (Web API)
 - Entity Framework Core 8
@@ -466,6 +484,40 @@ For more advanced scenarios, you can:
 - BCrypt.Net-Next (Password hashing)
 - Role-Based Authorization
 - C# 12
+
+### Frontend
+- Vue 3 (Composition API)
+- Vuetify 3 (Material Design)
+- TypeScript
+- Pinia (State Management)
+- Vue Router (Client-side routing with navigation guards)
+- Vite (Build tool and dev server)
+
+## Frontend Application
+
+The `frontend` directory contains a complete Vue 3 + Vuetify application with:
+
+### Features
+- **Login & Registration**: User authentication with JWT tokens
+- **Dashboard**: Overview of all data with statistics
+- **User Management**: View and manage users (admin features)
+- **Protected Routes**: Navigation guards ensure authenticated access
+- **Role-Based UI**: Different UI elements for Admins, Managers, and Users
+- **Responsive Design**: Mobile-friendly Vuetify Material Design components
+
+### Quick Start
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Visit `http://localhost:5173` to access the application.
+
+### Test Credentials
+Register a new account or use the API to authenticate existing users. New users are automatically added to the "Users" group.
+
+See [frontend/README.md](frontend/README.md) for detailed frontend documentation.
 
 ## License
 
