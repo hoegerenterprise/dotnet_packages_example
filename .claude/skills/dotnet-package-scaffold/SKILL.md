@@ -59,6 +59,7 @@ Create the following structure:
 │       ├── Models/
 │       ├── Data/
 │       └── {PackageName}.csproj
+├── .gitignore
 └── README.md
 ```
 
@@ -840,7 +841,86 @@ app.Logger.LogInformation("  - ProductsController ({PackageName})");
 app.Run();
 ```
 
-### Step 10: Create README
+### Step 10: Create .gitignore
+
+Create a `.gitignore` file in the solution root to exclude build artifacts and generated files:
+
+```gitignore
+## .NET Build artifacts and dependencies
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / VS Code / Rider
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.iml
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+packages.lock.json
+
+# .NET Core
+artifacts/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Environment and secrets
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+```
+
+### Step 11: Create README
 
 Generate a comprehensive README.md documenting:
 - Project structure with controllers and DTOs
@@ -852,7 +932,7 @@ Generate a comprehensive README.md documenting:
 - How to package the library with `dotnet pack`
 - How to extend the structure
 
-### Step 11: Build and Test
+### Step 12: Build and Test
 
 ```bash
 # Build solution

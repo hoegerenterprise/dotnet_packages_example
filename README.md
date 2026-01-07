@@ -31,6 +31,7 @@ dotnet_packages/
 │       ├── Data/
 │       │   └── PackageDbInitializer.cs
 │       └── MyPackage.csproj
+├── .gitignore
 └── README.md
 ```
 
