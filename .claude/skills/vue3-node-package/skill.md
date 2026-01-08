@@ -1,14 +1,13 @@
 # Vue 3 + Vuetify Installable Package Skill
 
-This skill provides comprehensive knowledge about creating and maintaining a Vue 3 component library with Vuetify that is structured as an installable npm package, including a playground demonstration app and Flask backend.
+This skill provides comprehensive knowledge about creating and maintaining a Vue 3 component library with Vuetify that is structured as an installable npm package.
 
 ## Overview
 
 This skill covers the architecture of a Vue 3 application built as a reusable component library that can be installed via npm. The project consists of:
 
 1. **Main Package** (`/`) - Installable npm package with Vue components, stores, and router
-2. **Playground** (`/playground`) - Demonstration app showing library usage
-3. **Backend** (`/backend`) - Flask API server (if applicable)
+2. **Frontend** (`/frontend`) - Usage example demonstrating how to consume the library
 
 ## Project Structure
 
@@ -21,9 +20,9 @@ project-root/
 │   ├── types/                    # TypeScript definitions
 │   ├── router/                   # Vue Router config
 │   └── index.ts                  # Library entry point
-├── playground/                   # Demo application
+├── frontend/                     # Usage example application
 │   ├── src/
-│   │   ├── views/               # Playground-specific views
+│   │   ├── views/               # Example-specific views
 │   │   ├── router/              # Custom router config
 │   │   ├── plugins/
 │   │   │   └── vuetify.ts       # Vuetify configuration
@@ -31,11 +30,6 @@ project-root/
 │   │   └── main.ts
 │   ├── package.json
 │   └── vite.config.ts
-├── backend/                      # Flask API (optional)
-│   ├── app.py
-│   ├── models.py
-│   ├── requirements.txt
-│   └── .gitignore
 ├── package.json                  # Library package config
 ├── vite.config.ts               # Build configuration
 └── tsconfig.json                # TypeScript config
@@ -43,7 +37,6 @@ project-root/
 
 ## Technology Stack
 
-### Frontend
 - **Vue 3** - Progressive JavaScript framework with Composition API
 - **Vuetify 3** - Material Design component framework
 - **Pinia** - State management
@@ -51,10 +44,6 @@ project-root/
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
 - **vite-plugin-dts** - TypeScript declaration generation
-
-### Backend (Optional)
-- **Flask** - Python web framework
-- **Flask-CORS** - Cross-origin resource sharing
 
 ## Key Concepts
 
@@ -186,12 +175,6 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:5000',
-          changeOrigin: true,
-        }
-      }
     },
     build: isLib ? {
       lib: {
@@ -215,11 +198,11 @@ export default defineConfig(({ mode }) => {
 })
 ```
 
-### 4. Playground Structure
+### 4. Frontend Usage Example Structure
 
-The playground is a separate Vue application that demonstrates library usage.
+The frontend folder contains a separate Vue application that demonstrates how to consume the library. This is provided as a usage example only.
 
-**playground/package.json:**
+**frontend/package.json:**
 ```json
 {
   "name": "library-playground",
@@ -238,7 +221,7 @@ The playground is a separate Vue application that demonstrates library usage.
 }
 ```
 
-**playground/src/main.ts:**
+**frontend/src/main.ts:**
 ```typescript
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -256,7 +239,7 @@ app.use(router)
 app.mount('#app')
 ```
 
-**playground/src/router/index.ts:**
+**frontend/src/router/index.ts:**
 ```typescript
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -293,11 +276,11 @@ const router = createRouter({
 export default router
 ```
 
-**Key principle:** Playground imports from source (`../../../src/index`) during development, not from built dist.
+**Key principle:** Frontend example imports from source (`../../../src/index`) during development, not from built dist.
 
 ### 5. Vuetify Configuration
 
-**playground/src/plugins/vuetify.ts:**
+**frontend/src/plugins/vuetify.ts:**
 ```typescript
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
@@ -332,7 +315,7 @@ export default createVuetify({
 })
 ```
 
-### 6. Component Patterns with Vuetify
+### 6. Component Patterns with Vuetify (Library Source)
 
 Always use Vuetify components for theme consistency:
 
@@ -379,7 +362,7 @@ const handleAction = async () => {
 </template>
 ```
 
-### 7. Pinia Store Pattern
+### 7. Pinia Store Pattern (Library Source)
 
 ```typescript
 import { defineStore } from 'pinia'
@@ -456,52 +439,6 @@ export interface ApiResponse<T> {
 }
 ```
 
-### 9. Backend Flask Structure (Optional)
-
-**backend/app.py:**
-```python
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/api/v1/items', methods=['GET'])
-def get_items():
-    # Your logic here
-    return jsonify([])
-
-@app.route('/api/v1/items', methods=['POST'])
-def create_item():
-    data = request.json
-    # Your logic here
-    return jsonify(data), 201
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-```
-
-**backend/.gitignore:**
-```
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-ENV/
-env/
-.venv
-*.db
-*.sqlite3
-.env
-.flaskenv
-instance/
-.pytest_cache/
-.coverage
-htmlcov/
-```
-
 ## Build and Development Workflow
 
 ### Main Library
@@ -512,26 +449,19 @@ npm run build        # Build for production (app)
 npm run build:lib    # Build as library
 ```
 
-### Playground
+### Frontend Usage Example
 ```bash
-cd playground
+cd frontend
 npm install
-npm run dev          # Run playground dev server
-npm run build        # Build playground for production
-```
-
-### Backend
-```bash
-cd backend
-pip install -r requirements.txt
-python app.py        # Run Flask server on port 5000
+npm run dev          # Run frontend example dev server
+npm run build        # Build frontend example for production
 ```
 
 ## Important Rules and Best Practices
 
 1. **Always use Vuetify components** - Never use plain HTML elements like `<button>`, `<table>`, `<input>` when Vuetify equivalents exist (`<v-btn>`, `<v-table>`, `<v-text-field>`)
 
-2. **Import from source in playground** - Use `import { Component } from '../../../src/index'` not from dist during development
+2. **Import from source in frontend example** - Use `import { Component } from '../../../src/index'` not from dist during development
 
 3. **Theme consistency** - Use Vuetify theme colors, avoid hardcoded colors except for specific design requirements
 
@@ -539,15 +469,15 @@ python app.py        # Run Flask server on port 5000
 
 5. **TypeScript everywhere** - Define types in src/types/index.ts and use them consistently
 
-6. **Proxy API calls** - Configure Vite proxy to forward `/api` to backend port 5000
+6. **External dependencies in library build** - Always externalize vue, vue-router, pinia, vuetify in rollupOptions
 
-7. **External dependencies in library build** - Always externalize vue, vue-router, pinia, vuetify in rollupOptions
+7. **Separate frontend package.json** - Frontend example has its own dependencies, doesn't depend on the library package
 
-8. **Separate playground package.json** - Playground has its own dependencies, doesn't depend on the library package
+8. **Router factory pattern** - Export a function that creates the router, don't export router instance directly
 
-9. **Router factory pattern** - Export a function that creates the router, don't export router instance directly
+9. **Plugin options** - Make baseUrl and apiBaseUrl configurable via plugin options
 
-10. **Plugin options** - Make baseUrl and apiBaseUrl configurable via plugin options
+10. **Frontend is example only** - The frontend folder is provided as a usage example to demonstrate how to consume the library, not as part of the main package
 
 ## Related Documentation
 
@@ -555,8 +485,7 @@ See the following files for detailed information:
 
 - [package-structure.md](./package-structure.md) - NPM package configuration details
 - [vue-stack.md](./vue-stack.md) - Vue, Vuetify, Pinia, Router patterns
-- [playground-setup.md](./playground-setup.md) - Playground app configuration
-- [backend-structure.md](./backend-structure.md) - Flask backend API patterns
+- [frontend-setup.md](./frontend-setup.md) - Frontend usage example configuration
 - [components-guide.md](./components-guide.md) - Component patterns and theming
 
 ## Common Tasks
@@ -571,14 +500,14 @@ See the following files for detailed information:
 1. Create view in `src/views/YourView.vue`
 2. Export it in `src/index.ts`
 3. Add route to router in `src/router/index.ts`
-4. Import and use in playground router
+4. Import and use in frontend example router
 
-### Adding Playground-Specific Pages
-1. Create view in `playground/src/views/YourView.vue`
-2. Add route in `playground/src/router/index.ts`
-3. Add menu item in `playground/src/App.vue`
+### Adding Frontend Example-Specific Pages
+1. Create view in `frontend/src/views/YourView.vue`
+2. Add route in `frontend/src/router/index.ts`
+3. Add menu item in `frontend/src/App.vue`
 
 ### Modifying Theme Colors
-1. Edit `playground/src/plugins/vuetify.ts`
+1. Edit `frontend/src/plugins/vuetify.ts`
 2. Update theme colors in the `themes.dark.colors` object
 3. Restart dev server for changes to take effect
